@@ -3,12 +3,17 @@ import API from "../api/axio";
 import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-  const [form, setForm] = useState({ username: "", password: "", email: "" });
+  const [form, setForm] = useState({ username: "", password: "", email: "", role: "STUDENT" });
   const navigate = useNavigate();
+
+  /*const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };*/
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      console.log(form);
       await API.post("/users/register", form);
       alert("Registered successfully! Please log in.");
       navigate("/login");
@@ -47,6 +52,15 @@ export default function Register() {
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+        <select
+          name="role"
+          value={form.role}
+          onChange={(e) => setForm({ ...form, role: e.target.value })}
+          className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="STUDENT">Student</option>
+          <option value="TEACHER">Teacher</option>
+        </select>
         <button className="bg-blue-600 text-white w-full py-3 rounded-xl hover:bg-blue-700 transition duration-300 font-semibold">
           Register
         </button>

@@ -8,13 +8,12 @@ const CourseCard = ({ course, onAssign }) => {
 
   const handleAssign = async () => {
     const token = localStorage.getItem("token");
-    if (!token) {
+    const userId = localStorage.getItem("userId");
+
+    if (!token || !userId) {
       alert("You must be logged in to assign courses.");
       return;
     }
-
-    const decoded = jwtDecode(token);
-    const userId = decoded.userId || decoded.id || decoded.sub;
 
     try {
       await API.post(`courses/${course.courseId}/assign/${userId}`);

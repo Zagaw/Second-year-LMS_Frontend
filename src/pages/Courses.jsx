@@ -6,6 +6,7 @@ import CourseForm from "../components/CourseForm";
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);
+    const role = localStorage.getItem("role") || "";
 
   const fetchCourses = async () => {
     try {
@@ -23,8 +24,10 @@ const Courses = () => {
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      <CourseForm onCourseAdded={fetchCourses} />
-      <div className="flex flex-wrap gap-4">
+      {/* Only TEACHER can add courses */}
+      {role === "ROLE_TEACHER" && <CourseForm onCourseAdded={fetchCourses} />}
+
+      <div className="flex flex-wrap gap-4 mt-6">
         {courses.length > 0 ? (
           courses.map((course) => (
             <CourseCard key={course.courseId} course={course} onAssign={fetchCourses} />

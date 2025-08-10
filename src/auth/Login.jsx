@@ -1,6 +1,7 @@
 import { useState } from "react";
 import API from "../api/axio";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 export default function Login() {
   const [credentials, setCredentials] = useState({ username: "", password: "" });
@@ -11,7 +12,20 @@ export default function Login() {
     try {
       const res = await API.post("/users/login", credentials);
       const token = res.data.replace("JWT Token: ", "").trim();
+
+            // Decode JWT to get role
+      const decoded = jwtDecode(token);
+      const role = decoded.role || "";
+      
+      // Store in localStorage
       localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+
+      // Fetch user details from backend
+      const meRes = await API.get("/users/me");
+      localStorage.setItem("userId", meRes.data.id);
+      localStorage.setItem("username", meRes.data.username);
+
       navigate("/dashboard");
     } catch (err) {
       alert("Invalid credentials");
