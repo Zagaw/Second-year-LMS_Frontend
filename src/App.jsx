@@ -8,6 +8,7 @@ import Courses from "./pages/Courses";
 import CourseDetails from "./pages/CourseDetails";
 import AuthLayout from "./layouts/AuthLayout";
 import MainLayout from "./layouts/MainLayout";
+import MaterialsPage from "./pages/MaterialsPage";
 
 export default function App() {
 
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:id" element={<CourseDetails />} />
+        <Route path="/materials/course/:courseId" element={<MaterialsPage />} />
       </Route>
     </Routes>
   );

@@ -35,11 +35,13 @@ const CourseCard = ({ course, onAssign }) => {
       </h2>
       <p className="text-gray-600">{course.description || "No description."}</p>
       <button
-        onClick={handleAssign}
+        onClick={() => navigate(`/materials/course/${course.courseId}`)}
         className="mt-3 bg-green-500 text-white px-4 py-1 rounded hover:bg-green-600"
       >
-        Assign to Me
+        Get Materials
       </button>
+
+      
     </div>
   );
 };
