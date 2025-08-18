@@ -9,6 +9,7 @@ import CourseDetails from "./pages/CourseDetails";
 import AuthLayout from "./layouts/AuthLayout";
 import MainLayout from "./layouts/MainLayout";
 import MaterialsPage from "./pages/MaterialsPage";
+import QuizzesPage from "./pages/QuizzesPage";
 
 export default function App() {
 
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/courses" element={<Courses />} />
         <Route path="/courses/:id" element={<CourseDetails />} />
         <Route path="/materials/course/:courseId" element={<MaterialsPage />} />
+        <Route path="/quizzes/material/:materialId" element={<QuizzesPage />} />
       </Route>
     </Routes>
   );

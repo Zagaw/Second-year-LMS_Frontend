@@ -83,15 +83,24 @@ export default function MaterialsPage() {
                 )}
               </div>
 
-              {/* Delete button (only for teachers) */}
-              {isTeacher && (
+              <div>
+                {/* Delete button (only for teachers) */}
+                {isTeacher && (
+                  <button
+                    onClick={() => handleDeleteMaterial(mat.materialId)}
+                    className="mt-3 bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 self-end"
+                  >
+                    Delete
+                  </button>
+                )}
                 <button
-                  onClick={() => handleDeleteMaterial(mat.materialId)}
-                  className="mt-3 bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 self-end"
-                >
-                  Delete
+                    onClick={() => navigate(`/quizzes/material/${mat.materialId}`)}
+                    className="mt-3 bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600 self-end"
+                  >
+                    Take Quizzes
                 </button>
-              )}
+              </div>
+
             </div>
           ))}
         </div>
