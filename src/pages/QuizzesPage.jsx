@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import API from "../api/axio";
 
 export default function QuizzesPage() {
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { materialId } = useParams();
-  const { courseId } = useParams();
+  const [courseId, setCourseId] = useState(null);
   const [quiz, setQuiz] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [isTeacher, setIsTeacher] = useState(false);
@@ -25,9 +26,34 @@ export default function QuizzesPage() {
   ]);
 
   useEffect(() => {
+
+    // Get courseId from location state or try to fetch it
+    if (location.state?.courseId) {
+      setCourseId(location.state.courseId);
+    } else {
+      // Fallback: try to get courseId from localStorage or fetch from API
+      const storedCourseId = localStorage.getItem('currentCourseId');
+      if (storedCourseId) {
+        setCourseId(storedCourseId);
+      } else {
+        fetchCourseIdFromMaterial();
+      }
+    }
     checkUserRole();
     fetchQuiz();
-  }, [materialId]);
+  }, [materialId, location]);
+
+  const fetchCourseIdFromMaterial = async () => {
+    try {
+      const res = await API.get(`/materials/${materialId}`);
+      if (res.data.courseId) {
+        setCourseId(res.data.courseId);
+        localStorage.setItem('currentCourseId', res.data.courseId);
+      }
+    } catch (err) {
+      console.error("Error fetching material details", err);
+    }
+  };
 
   const checkUserRole = () => {
     const role = localStorage.getItem("role");
@@ -152,6 +178,16 @@ export default function QuizzesPage() {
     } catch (err) { console.error(err); alert("Failed to submit quiz"); }
   };
 
+    const handleBackToMaterials = () => {
+    if (courseId) {
+      navigate(`/materials/course/${courseId}`);
+    } else {
+      // Fallback if courseId is still not available
+      alert("Course information not available. Redirecting to dashboard.");
+      navigate("/dashboard");
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6 bg-gray-50 min-h-screen">
       
@@ -160,7 +196,7 @@ export default function QuizzesPage() {
           Quiz for Material #{materialId}
         </h1>
         <button
-            onClick={() => navigate(`/materials/course/${courseId}`)}
+            onClick={handleBackToMaterials}
             className="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300"
           >
             Back to Materials

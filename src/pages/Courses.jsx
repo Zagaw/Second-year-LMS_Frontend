@@ -27,19 +27,27 @@ const Courses = () => {
   };
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      {/* Only TEACHER can add courses */}
-      {role === "ROLE_TEACHER" && <CourseForm onCourseAdded={fetchCourses} />}
+    <div className="max-w-7xl mx-auto p-6 space-y-6 bg-gray-50 min-h-screen">
 
-      <div className="flex flex-wrap gap-4 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {courses.length > 0 ? (
           courses.map((course) => (
-            <CourseCard key={course.courseId} course={course} onAssign={fetchCourses} onDelete={handleDeleteCourse} />
+            <CourseCard 
+              key={course.courseId} 
+              course={course} 
+              onAssign={fetchCourses} 
+              onDelete={handleDeleteCourse} 
+            />
           ))
         ) : (
-          <p>No courses available.</p>
+          <div className="col-span-full bg-white rounded-xl shadow-md p-8 text-center">
+            <p className="text-gray-500 text-lg">No courses available.</p>
+          </div>
         )}
       </div>
+
+      {/* Only TEACHER can add courses */}
+      {role === "ROLE_TEACHER" && <CourseForm onCourseAdded={fetchCourses} />}
     </div>
   );
 };
