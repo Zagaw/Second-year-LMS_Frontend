@@ -1,10 +1,24 @@
 // src/components/CourseCard.jsx
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import API from "../api/axio";
 import { jwtDecode } from "jwt-decode";
 
-const CourseCard = ({ course, onAssign }) => {
+const CourseCard = ({ course, onAssign, onDelete }) => {
+
+
+  const [isTeacher, setIsTeacher] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    checkUserRole();
+  }, []);
+
+
+  const checkUserRole = () => {
+    const role = localStorage.getItem("role");
+    if (role === "ROLE_TEACHER") setIsTeacher(true);
+  };
 
   const handleAssign = async () => {
     const token = localStorage.getItem("token");
@@ -25,6 +39,19 @@ const CourseCard = ({ course, onAssign }) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this course?")) return;
+
+    try {
+      await API.delete(`courses/${course.courseId}`);
+      onDelete && onDelete(course.courseId);
+      alert("Course deleted successfully!");
+    } catch (err) {
+      alert("Failed to delete course.");
+      console.error(err);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow p-5 hover:shadow-lg transition w-full sm:w-[48%] lg:w-[30%]">
       <h2
@@ -41,7 +68,15 @@ const CourseCard = ({ course, onAssign }) => {
         Get Materials
       </button>
 
-      
+      {/* 🔹 Only teachers see Delete button */}
+      {isTeacher && (
+        <button
+          onClick={handleDelete}
+          className="mt-3 bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600"
+        >
+          Delete
+        </button>
+      )}
     </div>
   );
 };

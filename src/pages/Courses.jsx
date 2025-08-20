@@ -6,7 +6,7 @@ import CourseForm from "../components/CourseForm";
 
 const Courses = () => {
   const [courses, setCourses] = useState([]);
-    const role = localStorage.getItem("role") || "";
+  const role = localStorage.getItem("role") || "";
 
   const fetchCourses = async () => {
     try {
@@ -22,6 +22,10 @@ const Courses = () => {
     fetchCourses();
   }, []);
 
+  const handleDeleteCourse = (courseId) => {
+    setCourses((prev) => prev.filter((c) => c.courseId !== courseId));
+  };
+
   return (
     <div className="p-4 max-w-7xl mx-auto">
       {/* Only TEACHER can add courses */}
@@ -30,7 +34,7 @@ const Courses = () => {
       <div className="flex flex-wrap gap-4 mt-6">
         {courses.length > 0 ? (
           courses.map((course) => (
-            <CourseCard key={course.courseId} course={course} onAssign={fetchCourses} />
+            <CourseCard key={course.courseId} course={course} onAssign={fetchCourses} onDelete={handleDeleteCourse} />
           ))
         ) : (
           <p>No courses available.</p>
