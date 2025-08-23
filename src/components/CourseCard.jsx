@@ -43,7 +43,7 @@ const CourseCard = ({ course, onAssign, onDelete }) => {
       onDelete && onDelete(course.courseId);
       alert("Course deleted successfully!");
     } catch (err) {
-      alert("Failed to delete course.");
+      alert("Failed to delete course. Delete materials first");
       console.error(err);
     }
   };

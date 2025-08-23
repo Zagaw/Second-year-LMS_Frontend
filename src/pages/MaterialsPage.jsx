@@ -45,9 +45,15 @@ export default function MaterialsPage() {
     if (!window.confirm("Are you sure you want to delete this material?")) return;
     try {
       await API.delete(`/materials/course/${courseId}/${materialId}`);
+      alert("Material deleted successfully.");
       fetchMaterials();
-    } catch (error) {
-      console.error("Error deleting material", error);
+    } catch (err) {
+      if (err.response && err.response.data) {
+        alert(err.response.data); // backend message
+      } else {
+        alert("Failed to delete material. Please try again.");
+      }
+      console.error("Error deleting material", err);
     }
   };
 

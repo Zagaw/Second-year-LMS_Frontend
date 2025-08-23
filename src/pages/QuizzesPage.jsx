@@ -129,6 +129,11 @@ export default function QuizzesPage() {
       setQuestions([]);
       alert("Quiz deleted successfully.");
     } catch (err) {
+      if (err.response && err.response.data) {
+        alert(err.response.data);  // show backend message
+      } else {
+        alert("Failed to delete quiz. Please try again.");
+      }
       console.error("Error deleting quiz", err);
     }
   };
@@ -139,6 +144,11 @@ export default function QuizzesPage() {
       await API.delete(`/quizzes/questions/${questionId}`);
       fetchQuestions(quiz.id);
     } catch (err) {
+      if (err.response && err.response.data) {
+        alert(err.response.data);  // show backend message
+      } else {
+        alert("Failed to delete question. Please try again.");
+      }
       console.error("Error deleting question", err);
     }
   };
