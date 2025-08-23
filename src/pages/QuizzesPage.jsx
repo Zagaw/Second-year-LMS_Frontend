@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import API from "../api/axio";
 
 export default function QuizzesPage() {
-
   const navigate = useNavigate();
   const location = useLocation();
   const { materialId } = useParams();
@@ -24,14 +23,15 @@ export default function QuizzesPage() {
   const [bulkQuestions, setBulkQuestions] = useState([
     { questionText: "", optionA: "", optionB: "", optionC: "", optionD: "", correctAnswer: "A" },
   ]);
+  const [submissionResult, setSubmissionResult] = useState(null);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [correctAnswers, setCorrectAnswers] = useState({});
+  const [materialName, setMaterialName] = useState(""); // State for material name
 
   useEffect(() => {
-
-    // Get courseId from location state or try to fetch it
     if (location.state?.courseId) {
       setCourseId(location.state.courseId);
     } else {
-      // Fallback: try to get courseId from localStorage or fetch from API
       const storedCourseId = localStorage.getItem('currentCourseId');
       if (storedCourseId) {
         setCourseId(storedCourseId);
@@ -41,7 +41,21 @@ export default function QuizzesPage() {
     }
     checkUserRole();
     fetchQuiz();
+    fetchMaterialName(); // Fetch material name
   }, [materialId, location]);
+
+  const fetchMaterialName = async () => {
+    try {
+      const res = await API.get(`/materials/${materialId}`);
+      if (res.data.title) {
+        setMaterialName(res.data.title);
+      }
+    } catch (err) {
+      console.error("Error fetching material details", err);
+      // Fallback to ID if name can't be fetched
+      setMaterialName(`Material #${materialId}`);
+    }
+  };
 
   const fetchCourseIdFromMaterial = async () => {
     try {
@@ -76,9 +90,23 @@ export default function QuizzesPage() {
     try {
       const res = await API.get(`/quizzes/${quizId}/questions`);
       setQuestions(res.data);
+      shuffleQuestions(res.data);
+      
+      if (isTeacher) {
+        const correctAnswersMap = {};
+        res.data.forEach(q => {
+          correctAnswersMap[q.questionId] = q.correctAnswer;
+        });
+        setCorrectAnswers(correctAnswersMap);
+      }
     } catch (err) {
       console.error("Error fetching questions", err);
     }
+  };
+
+  const shuffleQuestions = (questionsArray) => {
+    const shuffled = [...questionsArray].sort(() => Math.random() - 0.5);
+    setShuffledQuestions(shuffled);
   };
 
   const handleAddQuestion = async (e) => {
@@ -127,10 +155,12 @@ export default function QuizzesPage() {
       await API.delete(`/quizzes/${quiz.id}`);
       setQuiz(null);
       setQuestions([]);
+      setShuffledQuestions([]);
+      setSubmissionResult(null);
       alert("Quiz deleted successfully.");
     } catch (err) {
       if (err.response && err.response.data) {
-        alert(err.response.data);  // show backend message
+        alert(err.response.data);
       } else {
         alert("Failed to delete quiz. Please try again.");
       }
@@ -145,7 +175,7 @@ export default function QuizzesPage() {
       fetchQuestions(quiz.id);
     } catch (err) {
       if (err.response && err.response.data) {
-        alert(err.response.data);  // show backend message
+        alert(err.response.data);
       } else {
         alert("Failed to delete question. Please try again.");
       }
@@ -170,6 +200,7 @@ export default function QuizzesPage() {
   };
 
   const handleSelectAnswer = (questionId, option) => {
+    if (submissionResult) return;
     setAnswers((prev) => ({ ...prev, [questionId]: option }));
   };
 
@@ -184,18 +215,46 @@ export default function QuizzesPage() {
     };
     try {
       const res = await API.post(`/quizzes/${quiz.id}/submissions`, payload);
+      
+      const correctAnswersMap = {};
+      questions.forEach(q => {
+        correctAnswersMap[q.questionId] = q.correctAnswer;
+      });
+      setCorrectAnswers(correctAnswersMap);
+      
+      setSubmissionResult({
+        score: res.data.score,
+        totalQuestions: res.data.totalQuestions,
+      });
       alert(`Submitted! Score: ${res.data.score}/${res.data.totalQuestions}`);
-    } catch (err) { console.error(err); alert("Failed to submit quiz"); }
+    } catch (err) { 
+      console.error(err); 
+      alert("Failed to submit quiz"); 
+    }
   };
 
-    const handleBackToMaterials = () => {
+  const handleReattempt = () => {
+    setSubmissionResult(null);
+    setAnswers({});
+    shuffleQuestions(questions);
+  };
+
+  const handleBackToMaterials = () => {
     if (courseId) {
       navigate(`/materials/course/${courseId}`);
     } else {
-      // Fallback if courseId is still not available
       alert("Course information not available. Redirecting to dashboard.");
       navigate("/dashboard");
     }
+  };
+
+  const isAnswerCorrect = (questionId) => {
+    if (!submissionResult) return false;
+    return answers[questionId] === correctAnswers[questionId];
+  };
+
+  const getCorrectAnswer = (questionId) => {
+    return correctAnswers[questionId];
   };
 
   return (
@@ -203,7 +262,7 @@ export default function QuizzesPage() {
       
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          Quiz for Material #{materialId}
+          Quiz for {materialName || `Material #${materialId}`}
         </h1>
         <button
             onClick={handleBackToMaterials}
@@ -213,8 +272,6 @@ export default function QuizzesPage() {
         </button>
       </div>
 
-
-      {/* If no quiz exists, show create quiz form for teacher */}
       {!quiz && isTeacher && (
         <div className="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">Create New Quiz</h2>
@@ -251,9 +308,27 @@ export default function QuizzesPage() {
                 </button>
               )}
             </div>
+            {submissionResult && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-800">
+                  Your Score: {submissionResult.score}/{submissionResult.totalQuestions}
+                </h3>
+                <p className="text-blue-600">Hover over questions to see correct answers</p>
+                
+                {!isTeacher && (
+                  <div className="mt-4">
+                    <button
+                      onClick={handleReattempt}
+                      className="bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium shadow-md hover:shadow-lg"
+                    >
+                      Try Again
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Teacher-only: add question */}
           {isTeacher && (
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-700 mb-4">Add New Question</h3>
@@ -335,7 +410,6 @@ export default function QuizzesPage() {
             </div>
           )}
 
-          {/* Bulk add form */}
           {isTeacher && (
             <div className="p-6 border-b border-gray-200">
               <h3 className="text-lg font-medium text-gray-700 mb-4">Bulk Add Questions</h3>
@@ -439,12 +513,23 @@ export default function QuizzesPage() {
             </div>
           )}
 
-          {/* Questions */}
           <div className="p-6">
-            {questions.length > 0 ? (
+            {shuffledQuestions.length > 0 ? (
               <div className="space-y-6">
-                {questions.map((q, idx) => (
-                  <div key={q.questionId} className="border border-gray-200 rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition-shadow duration-300">
+                {shuffledQuestions.map((q, idx) => (
+                  <div 
+                    key={q.questionId} 
+                    className={`border border-gray-200 rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition-shadow duration-300 relative
+                      ${submissionResult ? (isAnswerCorrect(q.questionId) ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') : ''}`}
+                  >
+                    {submissionResult && (
+                      <div className="absolute top-3 right-3 group">
+                        <span className="text-gray-400 cursor-help text-sm">ℹ️</span>
+                        <div className="absolute right-0 bottom-full mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg z-10">
+                          Correct answer: {q[`option${getCorrectAnswer(q.questionId)}`]}
+                        </div>
+                      </div>
+                    )}
                     <div className="mb-4">
                       <p className="text-lg font-medium text-gray-800 mb-4">
                         <span className="text-blue-600 font-semibold">Q{idx + 1}:</span> {q.questionText}
@@ -456,9 +541,14 @@ export default function QuizzesPage() {
                             onClick={() => handleSelectAnswer(q.questionId, opt)}
                             className={`border rounded-xl p-4 text-left transition-all duration-200 ${
                               answers[q.questionId] === opt
-                                ? "bg-blue-100 border-blue-500 shadow-inner"
+                                ? submissionResult 
+                                  ? (isAnswerCorrect(q.questionId) && answers[q.questionId] === opt
+                                    ? "bg-green-100 border-green-500 shadow-inner"
+                                    : "bg-red-100 border-red-500 shadow-inner")
+                                  : "bg-blue-100 border-blue-500 shadow-inner"
                                 : "border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400"
-                            }`}
+                            } ${submissionResult && getCorrectAnswer(q.questionId) === opt ? 'ring-2 ring-green-500' : ''}`}
+                            disabled={submissionResult !== null}
                           >
                             <span className="font-semibold text-gray-700">{opt}.</span> {q[`option${opt}`]}
                           </button>
@@ -481,8 +571,7 @@ export default function QuizzesPage() {
             )}
           </div>
 
-          {/* Sticky submit button for students */}
-          {!isTeacher && questions.length > 0 && (
+          {!isTeacher && shuffledQuestions.length > 0 && !submissionResult && (
             <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 shadow-lg">
               <div className="max-w-4xl mx-auto flex justify-end">
                 <button
