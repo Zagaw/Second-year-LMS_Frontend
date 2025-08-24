@@ -43,10 +43,10 @@ export default function Sidebar() {
         } md:translate-x-0 transition-transform duration-300 z-40 md:z-0`}
       >
         <div className="p-6">
-          <div className="text-2xl font-bold text-black-700 mb-8">
-            Second Year LMS
+          <div className="flex items-center pb-2">
+            <div className="bg-white text-blue-800 font-bold text-xl p-2 rounded-md">LMS</div>
+            <span className="ml-3 font-semibold text-lg">Learning System</span>
           </div>
-
           <nav className="space-y-2">
             {menuItems.map((item) => (
               <Link
