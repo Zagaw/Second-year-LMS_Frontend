@@ -36,11 +36,10 @@ export default function Dashboard() {
 }*/
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import API from "../api/axio";
 
 export default function QuizSubmissionsPage() {
-  const { quizId } = useParams();
   const navigate = useNavigate();
   const studentId = localStorage.getItem("userId");
   const [submissions, setSubmissions] = useState([]);
@@ -65,7 +64,7 @@ export default function QuizSubmissionsPage() {
         .then(res => setSubmissions(res.data))
         .catch(err => console.error(err));
     }
-  }, [quizId, studentId, isTeacher]);
+  }, [studentId, isTeacher]);
 
   if (isTeacher) {
     // ===== Teacher Dashboard =====
@@ -80,34 +79,24 @@ export default function QuizSubmissionsPage() {
             <thead>
               <tr className="bg-gray-100 text-left">
                 <th className="p-3">Student</th>
+                <th className="p-3">Quiz</th>
+                <th className="p-3">Material</th>
+                <th className="p-3">Course</th>
                 <th className="p-3">Score</th>
                 <th className="p-3">Submitted At</th>
-                <th className="p-3">Action</th>
               </tr>
             </thead>
             <tbody>
               {submissions.map((sub) => (
-                <tr
-                  key={sub.submissionId}
-                  className="hover:bg-gray-50 border-b"
-                >
-                  <td className="p-3">{sub.student?.username}</td>
+                <tr key={sub.submissionId} className="hover:bg-gray-50 border-b">
+                  <td className="p-3">{sub.studentName}</td>
+                  <td className="p-3">{sub.quizTitle}</td>
+                  <td className="p-3">{sub.materialTitle}</td>
+                  <td className="p-3">{sub.courseName}</td>
                   <td className="p-3 font-semibold">
                     {sub.score}/{sub.totalQuestions}
                   </td>
-                  <td className="p-3">
-                    {new Date(sub.submittedAt).toLocaleString()}
-                  </td>
-                  <td className="p-3">
-                    <button
-                      onClick={() =>
-                        navigate(`/teacher-dashboard/${quizId}/submission/${sub.submissionId}`)
-                      }
-                      className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                      View Details
-                    </button>
-                  </td>
+                  <td className="p-3">{new Date(sub.submittedAt).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -130,12 +119,11 @@ export default function QuizSubmissionsPage() {
             <div
               key={sub.submissionId}
               className="bg-white p-4 rounded-2xl shadow hover:shadow-lg transition cursor-pointer"
-              onClick={() =>
-                navigate(`/student-dashboard/${quizId}/submission/${sub.submissionId}`)
-              }
             >
               <div className="flex justify-between items-center mb-2">
                 <p className="font-semibold text-lg">{sub.quizTitle}</p>
+                <p className="font-semibold text-lg">{sub.materialTitle}</p>
+                <p className="font-semibold text-lg">{sub.courseName}</p>
                 <p className="font-semibold">
                   Score: {sub.score}/{sub.totalQuestions}
                 </p>
@@ -150,4 +138,3 @@ export default function QuizSubmissionsPage() {
     </div>
   );
 }
-
