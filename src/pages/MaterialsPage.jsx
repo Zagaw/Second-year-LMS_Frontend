@@ -167,7 +167,7 @@ export default function MaterialsPage() {
                       {/* Take Quiz Button */}
                       <div className="mt-6 pt-4 border-t border-gray-100">
                         <button
-                          onClick={() => navigate(`/quizzes/material/${mat.materialId}`, { state: { courseId: mat.courseId } })}
+                          onClick={() => navigate(`/quizzes/material/${mat.materialId}`, { state: { courseId: courseId } })}
                           className="w-full bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium flex items-center justify-center shadow-md hover:shadow-lg"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
