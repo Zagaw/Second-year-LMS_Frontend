@@ -34,7 +34,6 @@ export default function Dashboard() {
     </div>
   );
 }*/
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axio";
@@ -59,7 +58,11 @@ export default function QuizSubmissionsPage() {
       // Teacher → get all submissions
       API.get(`/teacher/submissions`)
         .then(res => {
-          setSubmissions(res.data);
+          // Sort submissions by date (newest first)
+          const sortedSubmissions = res.data.sort((a, b) => 
+            new Date(b.submittedAt) - new Date(a.submittedAt)
+          );
+          setSubmissions(sortedSubmissions);
           setIsLoading(false);
         })
         .catch(err => {
@@ -70,7 +73,11 @@ export default function QuizSubmissionsPage() {
       // Student → get only their submissions
       API.get(`/students/${studentId}/submissions`)
         .then(res => {
-          setSubmissions(res.data);
+          // Sort submissions by date (newest first)
+          const sortedSubmissions = res.data.sort((a, b) => 
+            new Date(b.submittedAt) - new Date(a.submittedAt)
+          );
+          setSubmissions(sortedSubmissions);
           setIsLoading(false);
         })
         .catch(err => {
